@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriSMAE — Sistema Mexicano de Equivalentes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="light">
+
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">⚕</div>
+      <div>
+        <div class="brand-name">NutriSMAE</div>
+        <div class="brand-sub">Sistema Profesional</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-section="pacientes" onclick="showSection('pacientes')">
+        <span class="nav-icon">👤</span> Pacientes
+      </a>
+      <a class="nav-item" data-section="calculadora" onclick="showSection('calculadora')">
+        <span class="nav-icon">🔥</span> Calorías & TMB
+      </a>
+      <a class="nav-item" data-section="macros" onclick="showSection('macros')">
+        <span class="nav-icon">⚡</span> Macronutrimentos
+      </a>
+      <a class="nav-item" data-section="smae" onclick="showSection('smae')">
+        <span class="nav-icon">🥗</span> Plan SMAE
+      </a>
+      <a class="nav-item" data-section="distribucion" onclick="showSection('distribucion')">
+        <span class="nav-icon">🍽</span> Distribución Comidas
+      </a>
+      <a class="nav-item" data-section="comparacion" onclick="showSection('comparacion')">
+        <span class="nav-icon">📊</span> Comparación
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- HEADER BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <div id="section-title" class="section-title">Pacientes</div>
+      </div>
+      <div class="topbar-right">
+        <div class="patient-badge" id="patient-badge" style="display:none">
+          <span class="badge-dot"></span>
+          <span id="badge-name">—</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ PACIENTES ============ -->
+    <section id="sec-pacientes" class="section active">
+      <div class="section-header">
+        <h2>Gestión de Pacientes</h2>
+        <button class="btn btn-primary" onclick="toggleForm('patient-form')">+ Nuevo Paciente</button>
+      </div>
+
+      <div class="card form-card" id="patient-form" style="display:none">
+        <h3 class="card-title">Registro de Paciente</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label>Nombre completo</label>
+            <input type="text" id="p-nombre" placeholder="Ej: María García López">
+          </div>
+          <div class="field">
+            <label>Edad (años)</label>
+            <input type="number" id="p-edad" placeholder="25" min="1" max="120">
+          </div>
+          <div class="field">
+            <label>Peso (kg)</label>
+            <input type="number" id="p-peso" placeholder="64.5" step="0.1">
+          </div>
+          <div class="field">
+            <label>Estatura (cm)</label>
+            <input type="number" id="p-estatura" placeholder="165" step="0.1">
+          </div>
+          <div class="field">
+            <label>Sexo biológico</label>
+            <select id="p-sexo">
+              <option value="">Seleccionar...</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="toggleForm('patient-form')">Cancelar</button>
+          <button class="btn btn-primary" onclick="guardarPaciente()">Guardar Paciente</button>
+        </div>
+      </div>
+
+      <div id="patients-list" class="patients-grid"></div>
+    </section>
+
+    <!-- ============ CALCULADORA ============ -->
+    <section id="sec-calculadora" class="section">
+      <div class="section-header">
+        <h2>Calculadora Calórica — Mifflin-St Jeor</h2>
+      </div>
+
+      <div class="patient-required" id="calc-no-patient">
+        <div class="empty-icon">👤</div>
+        <p>Selecciona un paciente para calcular sus calorías</p>
+      </div>
+
+      <div id="calc-content" style="display:none">
+        <div class="cards-row">
+          <div class="card info-card">
+            <div class="info-label">Paciente</div>
+            <div class="info-value" id="calc-nombre">—</div>
+          </div>
+          <div class="card info-card">
+            <div class="info-label">Peso</div>
+            <div class="info-value" id="calc-peso">— kg</div>
+          </div>
+          <div class="card info-card">
+            <div class="info-label">Estatura</div>
+            <div class="info-value" id="calc-est">— cm</div>
+          </div>
+          <div class="card info-card">
+            <div class="info-label">Edad / Sexo</div>
+            <div class="info-value" id="calc-edad-sexo">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Nivel de Actividad Física</h3>
+          <select id="actividad" class="select-full" onchange="calcularTMB()">
+            <option value="1.2">Sedentario — Sin ejercicio (×1.2)</option>
+            <option value="1.375">Ligero — Ejercicio 1-3 días/sem (×1.375)</option>
+            <option value="1.55" selected>Moderado — Ejercicio 3-5 días/sem (×1.55)</option>
+            <option value="1.725">Intenso — Ejercicio 6-7 días/sem (×1.725)</option>
+            <option value="1.9">Muy intenso — Atleta de alto rendimiento (×1.9)</option>
+          </select>
+        </div>
+
+        <div class="kcal-grid" id="kcal-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ MACROS ============ -->
+    <section id="sec-macros" class="section">
+      <div class="section-header">
+        <h2>Distribución de Macronutrimentos</h2>
+      </div>
+
+      <div class="patient-required" id="macro-no-patient">
+        <div class="empty-icon">👤</div>
+        <p>Selecciona un paciente para configurar macros</p>
+      </div>
+
+      <div id="macro-content" style="display:none">
+        <div class="card">
+          <h3 class="card-title">Objetivos por kg de peso corporal</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label>Calorías objetivo (kcal)</label>
+              <input type="number" id="m-kcal" placeholder="2100" step="50" oninput="calcularMacros()">
+            </div>
+            <div class="field">
+              <label>Proteína (g/kg)</label>
+              <input type="number" id="m-prot" placeholder="2.2" step="0.1" value="2.2" oninput="calcularMacros()">
+            </div>
+            <div class="field">
+              <label>Grasa (g/kg)</label>
+              <input type="number" id="m-grasa" placeholder="0.8" step="0.1" value="0.8" oninput="calcularMacros()">
+            </div>
+          </div>
+        </div>
+
+        <div class="macros-display" id="macros-display"></div>
+
+        <div class="card" id="macro-porcentajes" style="display:none">
+          <h3 class="card-title">Distribución Porcentual</h3>
+          <div class="pct-bars" id="pct-bars"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SMAE ============ -->
+    <section id="sec-smae" class="section">
+      <div class="section-header">
+        <h2>Plan de Equivalentes SMAE</h2>
+        <button class="btn btn-primary" onclick="guardarPlan()">💾 Guardar Plan</button>
+      </div>
+
+      <div class="patient-required" id="smae-no-patient">
+        <div class="empty-icon">🥗</div>
+        <p>Selecciona un paciente para elaborar su plan SMAE</p>
+      </div>
+
+      <div id="smae-content" style="display:none">
+        <div class="card">
+          <table class="smae-table" id="smae-table">
+            <thead>
+              <tr>
+                <th>Grupo de Alimentos</th>
+                <th>CHO (g)</th>
+                <th>Prot (g)</th>
+                <th>Grasa (g)</th>
+                <th>kcal/eq</th>
+                <th class="eq-col">No. Equiv.</th>
+                <th>CHO Total</th>
+                <th>Prot Total</th>
+                <th>Grasa Total</th>
+                <th>kcal Total</th>
+              </tr>
+            </thead>
+            <tbody id="smae-tbody"></tbody>
+            <tfoot id="smae-tfoot"></tfoot>
+          </table>
+        </div>
+
+        <div id="smae-adecuacion" class="adecuacion-cards"></div>
+      </div>
+    </section>
+
+    <!-- ============ DISTRIBUCION ============ -->
+    <section id="sec-distribucion" class="section">
+      <div class="section-header">
+        <h2>Distribución por Tiempo de Comida</h2>
+      </div>
+
+      <div class="patient-required" id="dist-no-patient">
+        <div class="empty-icon">🍽</div>
+        <p>Selecciona un paciente para distribuir sus equivalentes</p>
+      </div>
+
+      <div id="dist-content" style="display:none">
+        <div class="card">
+          <p class="hint-text">Distribuye los equivalentes de cada grupo entre los tiempos de comida. El total por fila debe coincidir con el No. de Equivalentes del plan SMAE.</p>
+          <div class="dist-table-wrap">
+            <table class="smae-table" id="dist-table">
+              <thead>
+                <tr>
+                  <th>Grupo</th>
+                  <th>Total Eq.</th>
+                  <th>Desayuno</th>
+                  <th>Colación AM</th>
+                  <th>Comida</th>
+                  <th>Colación PM</th>
+                  <th>Cena</th>
+                  <th>Distribuido</th>
+                  <th>kcal</th>
+                </tr>
+              </thead>
+              <tbody id="dist-tbody"></tbody>
+              <tfoot id="dist-tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMPARACION ============ -->
+    <section id="sec-comparacion" class="section">
+      <div class="section-header">
+        <h2>Comparación Objetivo vs Plan SMAE</h2>
+      </div>
+
+      <div class="patient-required" id="comp-no-patient">
+        <div class="empty-icon">📊</div>
+        <p>Selecciona un paciente para ver la comparación</p>
+      </div>
+
+      <div id="comp-content" style="display:none">
+        <div class="comp-grid" id="comp-grid"></div>
+        <div class="card" id="comp-adecuacion">
+          <h3 class="card-title">Porcentaje de Adecuación</h3>
+          <div id="adec-bars"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
